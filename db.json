@@ -1,0 +1,106 @@
+{
+  "user": [
+    {
+      "id": "17a8",
+      "username": "Rye",
+      "password": "123",
+      "confirm_password": "123",
+      "role": "User"
+    },
+    {
+      "id": "838b",
+      "username": "Admin",
+      "password": "123",
+      "confirm_password": "123",
+      "role": "Admin"
+    },
+    {
+      "id": "6c7e",
+      "username": "Figo",
+      "password": "123",
+      "confirm_password": "123",
+      "role": "User"
+    }
+  ],
+  "package": [
+    {
+      "name": "Combo SAKTI",
+      "provider": "Telkomsel",
+      "category": "Package",
+      "period": "30 Days",
+      "price": 12,
+      "description": "52 GB Internet",
+      "id": "1"
+    },
+    {
+      "name": "OMG",
+      "provider": "Telkomsel",
+      "category": "Monthly",
+      "period": "30 Days",
+      "price": 11,
+      "description": "43 GB Internet",
+      "id": "2"
+    },
+    {
+      "name": "Zoom",
+      "provider": "Telkomsel",
+      "category": "Daily",
+      "period": "3 Days",
+      "price": 3,
+      "description": "1.5 GB Internet (Only for Zoom)",
+      "id": "3"
+    }
+  ],
+  "transaction": [
+    {
+      "id": "0f6f",
+      "user_id": "17a8",
+      "username": "Rye",
+      "role": "User",
+      "phone": "082165125561",
+      "transaction_date": "2024-01-29T06:17:06.098Z",
+      "package_id": "1",
+      "package_name": "Combo SAKTI"
+    },
+    {
+      "id": "263d",
+      "user_id": "17a8",
+      "username": "Rye",
+      "role": "User",
+      "phone": "081180091232",
+      "transaction_date": "2024-01-29T06:24:38.705Z",
+      "package_id": "2",
+      "package_name": "OMG"
+    },
+    {
+      "id": "dd8a",
+      "user_id": "6c7e",
+      "username": "Figo",
+      "role": "User",
+      "phone": "08139213910",
+      "transaction_date": "2024-01-29T06:39:18.197Z",
+      "package_id": "3",
+      "package_name": "Zoom"
+    },
+    {
+      "id": "e457",
+      "user_id": "6c7e",
+      "username": "Figo",
+      "role": "User",
+      "phone": "083819329089",
+      "transaction_date": "2024-01-29T06:39:31.320Z",
+      "package_id": "2",
+      "package_name": "OMG"
+    },
+    {
+      "id": "6cee",
+      "user_id": "17a8",
+      "username": "Rye",
+      "role": "User",
+      "phone": "082161525561",
+      "transaction_date": "2024-01-29T06:39:49.887Z",
+      "package_id": "1",
+      "package_name": "Combo SAKTI"
+    }
+  ]
+}

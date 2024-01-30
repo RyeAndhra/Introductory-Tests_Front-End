@@ -1,0 +1,522 @@
+        // form
+        //     .validateFields()
+        //     .then(values => {
+        //         console.log('Submitting purchase data:', values)
+
+        //         fetch("http://localhost:3000/transaction", {
+        //             method: "POST",
+        //             headers: { "Content-Type": "application/json" },
+        //             body: JSON.stringify(values)
+        //         })
+        //             .then((response) => {
+        //                 if (!response.ok) {
+        //                     throw new Error("Unexpected Server Response")
+        //                 }
+        //                 return response.json()
+        //             })
+        //             .then((data) => {
+        //                 console.log('Server response:', data)
+        //             })
+        //             .catch((error) => console.log("Error: ", error))
+        //             .finally(() => {
+        //                 setTimeout(() => {
+        //                     setModalOpen(false)
+        //                     setConfirmLoading(false)
+        //                 }, 1500)
+        //             })
+        //     })
+        //     .catch(errorInfo => {
+        //         console.log('Failed:', errorInfo)
+        //         setConfirmLoading(false)
+        //     })
+
+import React, { useEffect, useState } from 'react';
+import { DesktopOutlined, FileOutlined, AppstoreAddOutlined, EditOutlined, EllipsisOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { Breadcrumb, Layout, Menu, theme, Avatar, Card, Button, Modal, Form, Input, Select, InputNumber, Space } from 'antd';
+
+const { Meta } = Card;
+
+// Sidebar Etc
+const { Content, Footer, Sider } = Layout;
+function getItem(label, key, icon, children) {
+  return {
+    key,
+    icon,
+    children,
+    label,
+  };
+}
+const items = [
+  getItem('Dashboard', '1', <DesktopOutlined />),
+  getItem('Data', 'sub1', <AppstoreAddOutlined />, [
+    getItem('Package', '2'),
+    getItem('User', '3')
+  ]),
+  getItem('Transaction', '4', <FileOutlined />),
+];
+
+export default function App(props) {
+  const [collapsed, setCollapsed] = useState(false)
+
+  const {
+    token: { colorBgContainer, borderRadiusLG },
+  } = theme.useToken()
+
+  return (
+    <Layout style={{ minHeight: '100vh' }} >
+      <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
+        <div className="demo-logo-vertical" />
+        <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline" items={items} />
+      </Sider>
+      <Layout>
+        <Content style={{ margin: '0 16px' }} >
+          <Breadcrumb style={{ margin: '16px 0' }} >
+            <Breadcrumb.Item>Admin Page</Breadcrumb.Item>
+            <Breadcrumb.Item>Home</Breadcrumb.Item>
+          </Breadcrumb>
+          <div style={{
+            padding: 24,
+            minHeight: 360,
+            background: colorBgContainer,
+            borderRadius: borderRadiusLG,
+          }} >
+            <ModalForm fetchPackage={() => props.fetchPackage()} />
+            <Packages />
+          </div>
+        </Content>
+        <Footer style={{ textAlign: 'center' }} >
+          Trying Ant Design ©{new Date().getFullYear()} by Rye
+        </Footer>
+      </Layout>
+    </Layout>
+  );
+}
+
+function Packages() {
+  const [content, setContent] = useState(<PackageList showForm={showForm} />)
+
+  function showList() {
+    setContent(<PackageList showForm={showForm} />)
+  }
+
+  function showForm() {
+    setContent(<PackageForm showList={showList} />)
+  }
+
+  return (
+    <div>
+      {content}
+    </div>
+  )
+}
+
+function PackageList(props) {
+  const [packages, setPackages] = useState([])
+  const [selectedPackage, setSelectedPackage] = useState(null)
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [confirmLoading, setConfirmLoading] = useState(false)
+  const [form] = Form.useForm()
+
+  // GET PACKAGE
+  function fetchPackage() {
+    fetch("http://localhost:3000/package")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Unexpected Server Response")
+        }
+        return response.json()
+      })
+      .then((data) => { setPackages(data) })
+      .catch((error) => console.log("Error: ", error))
+  }
+
+  useEffect(() => {
+    console.log('PackageList component updated');
+    fetchPackage()
+  }, [])
+
+  // DETAIL PACKAGE
+
+  const showDetailModal = (packageItem) => {
+    setSelectedPackage(packageItem)
+    setIsDetailModalOpen(true)
+  }
+
+  // EDIT PACKAGE
+
+  const showEditModal = (packageItem) => {
+    setSelectedPackage(packageItem)
+    setIsEditModalOpen(true)
+  }
+
+  const handleSubmit = () => {
+    setConfirmLoading(true)
+    form
+      .validateFields()
+      .then(values => {
+        console.log('Submitting package data:', values)
+
+        fetch("http://localhost:3000/package/" + selectedPackage.id, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(values)
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Unexpected Server Response")
+            }
+            return response.json()
+          })
+          .then((data) => {
+            console.log('Server response:', data)
+            fetchPackage()
+          })
+          .catch((error) => console.log("Error: ", error))
+          .finally(() => {
+            setTimeout(() => {
+              setIsEditModalOpen(false)
+              setConfirmLoading(false)
+            }, 1500)
+          })
+      })
+      .catch(errorInfo => {
+        console.log('Failed:', errorInfo)
+        setConfirmLoading(false)
+      })
+  }
+
+  const handleCancel = () => {
+    setIsDetailModalOpen(false)
+    setIsEditModalOpen(false)
+    setSelectedPackage(null)
+    form.resetFields()
+    fetchPackage()
+  }
+
+  // DELETE PACKAGE
+  function deletePackage(id) {
+    fetch("http://localhost:3000/package/" + id, {
+      method: "DELETE"
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Unexpected Server Response")
+        }
+        return response.json()
+      })
+      .then((data) => {
+        console.log('Server response:', data)
+        fetchPackage()
+      })
+      .catch((error) => console.log("Error: ", error))
+  }
+
+  return (
+    <div style={{ display: 'flex' }}>
+      {/* SHOW PACKAGE */}
+      {packages.map((packageItem) => (
+        <Card
+          key={packageItem.id}
+          style={{ width: 300, margin: '1rem 1rem 0 0' }}
+          cover={
+            <img
+              alt="example"
+              src="https://api.dicebear.com/7.x/shapes/svg?seed=Aneka"
+            />
+          }
+          actions={[
+            <DeleteOutlined key="setting" onClick={() => deletePackage(packageItem.id)} />,
+            <EditOutlined key="edit" onClick={() => showEditModal(packageItem)} />,
+            <EditOutlined key="edit" onClick={() => props.showForm()} />,
+            <EllipsisOutlined key="ellipsis" onClick={() => showDetailModal(packageItem)} />,
+          ]}
+        >
+          <Meta
+            avatar={<Avatar src="https://api.dicebear.com/7.x/thumbs/svg?seed=Aneka" />}
+            title={packageItem.name}
+            description={packageItem.description}
+          />
+        </Card>
+      ))}
+      {/* DETAIL MODAL PACKAGE */}
+      <Modal
+        title={selectedPackage ? selectedPackage.name : 'Package Detail'}
+        visible={isDetailModalOpen}
+        onCancel={handleCancel}
+        footer={(_, { CancelBtn }) => (
+          <CancelBtn key="cancel" />
+        )}
+      >
+        {selectedPackage && (
+          <>
+            <p>Internet package by {selectedPackage.provider}</p>
+            <p>{selectedPackage.description} only for ${selectedPackage.price}. Valid for {selectedPackage.period}</p>
+          </>
+        )}
+      </Modal>
+      {/* EDIT MODAL PACKAGE */}
+      <Modal title={'Edit Package'} visible={isEditModalOpen} onCancel={handleCancel} footer={null} >
+        {selectedPackage && (
+          <>
+            <Form form={form} name="validateOnly" layout="vertical" onFinish={handleSubmit} autoComplete="off" initialValues={selectedPackage}>
+              <Form.Item name="name" label="Package Name" rules={[{ required: true, },]} >
+                <Input />
+              </Form.Item>
+              <Form.Item name="provider" label="Provider" rules={[{ required: true, },]} >
+                <Select>
+                  <Select.Option value="Telkomsel">Telkomsel</Select.Option>
+                  <Select.Option value="Indosat">Indosat</Select.Option>
+                  <Select.Option value="Byu">By.U</Select.Option>
+                </Select>
+              </Form.Item>
+              <Form.Item name="category" label="Category" rules={[{ required: true, },]} >
+                <Select>
+                  <Select.Option value="Package">Package</Select.Option>
+                  <Select.Option value="Internet">Internet</Select.Option>
+                  <Select.Option value="Credit">Credit</Select.Option>
+                </Select>
+              </Form.Item>
+              <Form.Item name="period" label="Active Period" rules={[{ required: true, },]} >
+                <Input />
+              </Form.Item>
+              <Form.Item name="price" label="Price" rules={[{ required: true, },]} >
+                <InputNumber />
+              </Form.Item>
+              <Form.Item name="description" label="Desc" rules={[{ required: true, },]} >
+                <Input.TextArea rows={2} />
+              </Form.Item>
+              <Form.Item>
+                <Space>
+                  <SubmitButton form={form} confirmLoading={confirmLoading} handleSubmit={handleSubmit} />
+                  <Button htmlType="reset">Reset</Button>
+                  <Button onClick={handleCancel}>Cancel</Button>
+                </Space>
+              </Form.Item>
+            </Form>
+          </>
+        )}
+      </Modal>
+    </div>
+  )
+}
+
+const SubmitButton = ({ confirmLoading }) => {
+  const [submittable, setSubmittable] = React.useState(false)
+
+  const [form] = Form.useForm()
+  const values = Form.useWatch([], form)
+
+  React.useEffect(() => {
+    form
+      .validateFields({
+        validateOnly: true,
+      })
+      .then(
+        () => {
+          setSubmittable(true)
+        },
+        () => {
+          setSubmittable(false)
+        }
+      )
+  }, [values])
+
+  return (
+    <Button type="primary" htmlType="submit" disabled={!submittable} loading={confirmLoading}>
+      Save
+    </Button>
+  )
+}
+
+function ModalForm({ fetchPackage }) {
+  const [open, setOpen] = useState(false)
+  const [confirmLoading, setConfirmLoading] = useState(false)
+  const [form] = Form.useForm()
+
+  const showModal = () => {
+    setOpen(true)
+  }
+
+  const handleCancel = () => {
+    setOpen(false)
+    fetchPackage()
+    form.resetFields()
+  };
+
+
+  const handleSubmit = () => {
+    setConfirmLoading(true)
+    form
+      .validateFields()
+      .then(values => {
+        console.log('Submitting package data:', values)
+
+        fetch("http://localhost:3000/package", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(values)
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Unexpected Server Response")
+            }
+            return response.json()
+          })
+          .then((data) => {
+            console.log('Server response:', data)
+            fetchPackage()
+          })
+          .catch((error) => console.log("Error: ", error))
+          .finally(() => {
+            setTimeout(() => {
+              setOpen(false)
+              setConfirmLoading(false)
+            }, 1500)
+          })
+      })
+      .catch(errorInfo => {
+        console.log('Failed:', errorInfo)
+        setConfirmLoading(false)
+      })
+  }
+
+  return (
+    <>
+      <Modal title="Create New Packages" visible={open} onCancel={handleCancel} footer={null} >
+        <Form form={form} name="validateOnly" layout="vertical" onFinish={handleSubmit} autoComplete="off">
+          <Form.Item name="name" label="Package Name" rules={[{ required: true, },]} >
+            <Input />
+          </Form.Item>
+          <Form.Item name="provider" label="Provider" rules={[{ required: true, },]} >
+            <Select>
+              <Select.Option value="Telkomsel">Telkomsel</Select.Option>
+              <Select.Option value="Indosat">Indosat</Select.Option>
+              <Select.Option value="Byu">By.U</Select.Option>
+            </Select>
+          </Form.Item>
+          <Form.Item name="category" label="Category" rules={[{ required: true, },]} >
+            <Select>
+              <Select.Option value="Package">Package</Select.Option>
+              <Select.Option value="Internet">Internet</Select.Option>
+              <Select.Option value="Credit">Credit</Select.Option>
+            </Select>
+          </Form.Item>
+          <Form.Item name="period" label="Active Period" rules={[{ required: true, },]} >
+            <Input />
+          </Form.Item>
+          <Form.Item name="price" label="Price" rules={[{ required: true, },]} >
+            <InputNumber />
+          </Form.Item>
+          <Form.Item name="description" label="Desc" rules={[{ required: true, },]} >
+            <Input.TextArea rows={2} />
+          </Form.Item>
+          <Form.Item>
+            <Space>
+              <SubmitButton form={form} confirmLoading={confirmLoading} handleSubmit={handleSubmit} />
+              <Button htmlType="reset">Reset</Button>
+              <Button onClick={handleCancel}>Cancel</Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
+      <Button type="dashed" onClick={showModal} icon={<PlusOutlined />}>New packages</Button>
+    </>
+  )
+}
+
+function PackageForm({ showList }) {
+  const [form] = Form.useForm()
+
+  const SubmitButton = ({ form }) => {
+    const [submittable, setSubmittable] = React.useState(false)
+
+    const values = Form.useWatch([], form)
+    React.useEffect(() => {
+      form
+        .validateFields({
+          validateOnly: true,
+        })
+        .then(
+          () => {
+            setSubmittable(true)
+          },
+          () => {
+            setSubmittable(false)
+          }
+        )
+    }, [values])
+
+    return (
+      <Button type="primary" htmlType="submit" disabled={!submittable}>
+        Save
+      </Button>
+    )
+  }
+
+  const handleSubmit = () => {
+    form
+      .validateFields()
+      .then(values => {
+        console.log('Submitting package data:', values)
+
+        fetch("http://localhost:3000/package", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(values)
+        })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Unexpected Server Response")
+            }
+            return response.json()
+          })
+          .then((data) => {
+            console.log('Server response:', data)
+            showList()
+          })
+          .catch((error) => console.log("Error: ", error))
+      })
+      .catch(errorInfo => {
+        console.log('Failed:', errorInfo)
+      })
+  }
+
+  return (
+    <Form form={form} name="validateOnly" layout="vertical" onFinish={handleSubmit} autoComplete="off">
+      <Form.Item name="name" label="Package Name" rules={[{ required: true, },]} >
+        <Input />
+      </Form.Item>
+      <Form.Item name="provider" label="Provider" rules={[{ required: true, },]} >
+        <Select>
+          <Select.Option value="Telkomsel">Telkomsel</Select.Option>
+          <Select.Option value="Indosat">Indosat</Select.Option>
+          <Select.Option value="Byu">By.U</Select.Option>
+        </Select>
+      </Form.Item>
+      <Form.Item name="category" label="Category" rules={[{ required: true, },]} >
+        <Select>
+          <Select.Option value="Package">Package</Select.Option>
+          <Select.Option value="Internet">Internet</Select.Option>
+          <Select.Option value="Credit">Credit</Select.Option>
+        </Select>
+      </Form.Item>
+      <Form.Item name="period" label="Active Period" rules={[{ required: true, },]} >
+        <Input />
+      </Form.Item>
+      <Form.Item name="price" label="Price" rules={[{ required: true, },]} >
+        <InputNumber />
+      </Form.Item>
+      <Form.Item name="description" label="Desc" rules={[{ required: true, },]} >
+        <Input.TextArea rows={2} />
+      </Form.Item>
+      <Form.Item>
+        <Space>
+          <SubmitButton form={form} />
+          <Button htmlType="reset">Reset</Button>
+          <Button onClick={() => showList()}>Cancel</Button>
+        </Space>
+      </Form.Item>
+    </Form>
+  )
+}
